@@ -1,0 +1,19 @@
+<div>
+    <el-button type="primary" icon="el-icon-refresh-right" @click="$emit('refresh')">刷新app运行日志
+    </el-button>
+    <br><br>
+    <el-alert type="info" :closable="false">
+        共计<b><i><em style="font-size:3em;">{{data.length}}</em></i></b>条日志
+    </el-alert>
+    <br>
+    <el-table max-height="550" border :data="data">
+
+        <el-table-column sortable prop="type" label="日志类型">
+        </el-table-column>
+        <el-table-column sortable prop="subType" label="日志子类型或标识">
+        </el-table-column>
+        <el-table-column sortable prop="time" label="发生时间">
+        </el-table-column>
+     </el-table>
+    
+</div>

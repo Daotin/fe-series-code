@@ -1,0 +1,212 @@
+<el-tab-pane name="welcome" label="欢迎使用">
+    <el-row>
+       <el-col :span="24" >
+       <!-- <el-col :span="24" style="padding-right:20px;border-right:dashed 5px peachpuff;"> -->
+
+
+          <el-row>
+
+             <el-col :span="24" style="text-align: center;">
+
+                <el-row>
+                   <el-col :span="12">
+                      <br />
+                      <el-button :icon="!isWatchingLog?'el-icon-open':'el-icon-turn-off'" type="primary"
+                         @click="toggleViewLog">
+                         {{isWatchingLog?'终止':'开始'}}查看实时监控日志
+                      </el-button>
+                   </el-col>
+                   <el-col :span="12">
+                      <br />
+                      <el-button icon="el-icon-caret-right" type="primary" @click="playWelcome">
+                         让设备播放欢迎音乐
+                      </el-button>
+                   </el-col>
+                </el-row>
+                <el-row>
+                   <el-col :span="12">
+                       <br />
+                      <el-button icon="el-icon-phone-outline
+                      " :disabled="isInSlow3G" type="primary" @click="useSlow3G">
+                         {{isInSlow3G?(('低速3g网模拟中,剩余'+slow3gRemainTime+'毫秒')):'模拟低速3g网(有效期5分钟)'}}
+                      </el-button>
+                   </el-col>
+                   <el-col :span="12">
+                       <br />
+
+                       <el-button icon="el-icon-phone-outline
+                       " :disabled="!isInSlow3G" type="primary" @click="cancelSlow3G">
+                          取消模拟低速3g网
+                       </el-button>
+                      
+                   </el-col>
+                </el-row>
+                <el-row>
+                   <el-col :span="12">
+                    <br>
+
+                
+
+                      <el-button type="primary" icon="el-icon-switch-button" @click="restartApp()">重启应用</el-button>
+                      
+                   </el-col>
+                   <el-col :span="12">
+                      <br>
+                      <el-button type="primary" icon="el-icon-view" @click="businessConfigDialogVisible=true;">查看业务配置
+                      </el-button>
+                   </el-col>
+                </el-row>
+
+
+                
+                
+               
+               
+                
+
+
+
+                <el-table border :data="osInfo" style="margin-top:10px;">
+                   <el-table-column width="100" prop="memoryUsage" label="应用内存占用">
+                   </el-table-column>
+                   <el-table-column width="130" label="系统内存使用">
+                      <template slot-scope="scope">
+                         剩{{scope.row.freeMemory}}/共{{scope.row.totalMemory}}/
+                      占用率{{((scope.row.totalMemory.split('GB')[0]-0-(scope.row.freeMemory.split('GB')[0]-0))
+                            /(scope.row.totalMemory.split('GB')[0]-0)*100).toFixed(2)}}%
+                      </template>
+                   </el-table-column>
+                   
+                   <el-table-column prop="appLaunchTime" label="程序启动时间">
+                   </el-table-column>
+                   <el-table-column width="90" prop="taskRunnedLoopCount" label="任务运行轮数">
+                   </el-table-column>
+                </el-table>
+
+                <el-card class="box-card" style="margin-top:20px;">
+                   <div slot="header" class="clearfix">
+                     <span>监控清单(共计{{taskList.length}}个任务)</span>
+                    
+                   </div>
+                   
+                   <div
+                    style="text-align:left;padding-left:70px;height:40px;line-height:40px;border-left:5px solid #5d9dda;margin-top:5px;"
+                   
+                   v-for="(o,k) in taskList" :key="o" class="text item">
+                     <!-- {{k+1}}.  &nbsp;&nbsp;&nbsp;&nbsp;   -->
+                     
+                     <span style="color:hsl(96, 81%, 61%);position: absolute;
+                     left: 30px;">
+                        {{serverStore.runningSubTaskIndex==k && serverStore.isTaskRunning?'运行中...':''}}
+                     </span>
+
+                     {{o.split('?')[0]}}
+                   </div>
+                 </el-card>
+
+               
+
+             </el-col>
+             
+          </el-row>
+
+
+
+
+          
+
+
+       </el-col>
+       <!-- <el-col :span="8" style="padding-left:20px;">
+          
+       </el-col> -->
+    </el-row>
+ </el-tab-pane>
+ <el-tab-pane name="log-record" label="关键日志记录">
+    <app-log :data="logTableData" @refresh="fetchAppRunningLogs(true)" />
+    
+ </el-tab-pane>
+ <el-tab-pane name="second-clock" label="秒表功能">
+    <el-col :span="24" style="padding-left:30px;">
+       <!-- <h2>
+          秒表功能
+
+       </h2> -->
+       <el-card>
+          <div slot="header">
+             倒计时秒表(步长0.5分钟,最多12分钟)
+          </div>
+          <div>
+             倒计时:
+             
+             <el-slider
+             @change="handleReverseClockerChange()"
+             v-model="reverseSecondClocker.remainModal"
+             :min="0" :max="12" :step="0.2"
+             show-stops>
+           </el-slider>
+
+           (剩余{{(reverseSecondClocker.remainModal*60).toFixed(0)}}秒)
+
+
+             
+          </div>
+       </el-card>
+       <el-card style="margin-top:20px;">
+          <div slot="header">
+             正计时秒表
+          </div>
+          <div>
+             <h3>状态:{{senondClocker.status}}</h3>
+             <h3 v-if="senondClocker.runningTime>0">runing time:
+ 
+                <b style="display:inline-block;width:80px;">
+                   {{(senondClocker.runningTime/1000).toFixed(2)}}
+                </b>
+ 
+ 
+ 
+                秒
+             </h3>
+ 
+             <el-button :disabled="senondClocker.status=='PLAYING'" type="primary" @click="playSencondClocker()"
+                icon="el-icon-video-play">
+                {{senondClocker.status=='PLAYING'?'计时中...':(senondClocker.status=='PAUSED'?'继续':"开始")}}
+             </el-button>
+ 
+             <el-button :disabled="senondClocker.status=='PAUSED'" @click="pauseSencondClocker()" type="primary"
+                icon="el-icon-video-pause">暂停</el-button>
+ 
+             <el-button icon="el-icon-watch-1" @click="resetSencondClocker()">重置</el-button>
+          </div>
+       </el-card>
+       <iframe src="http://dnery.me/t-rex-runner/" style="    border: none;
+       width: 100%;
+       overflow: hidden;
+       height: 300px;
+   "></iframe>
+       
+    </el-col>
+ </el-tab-pane>
+ <el-tab-pane name="log-help" label="如何看实时日志?">
+    <el-alert  type="info" :closable="false" style="">
+       查看服务端日志的步骤如下：
+       <br>1 安装chrome插件ServerLog（从chrome浏览器扩展市场可以安装）;
+       github地址为:
+       <a target="_blank" href="https://github.com/eshengsky/ServerLog/tree/master/chrome-extension-server-log"
+       >https://github.com/eshengsky/ServerLog/tree/master/chrome-extension-server-log</a>
+       <br>2 重启浏览器,进入本页面后开发人员工具，输入应用密钥;此应用日志密钥为:&nbsp;&nbsp;&nbsp;&nbsp;<b>tangsan</b>
+       <br>3 再次刷新页面
+       <br>4 点击下方查看监控日志按钮
+       <br><br>
+       若浏览器扩展程序使用过程中有异常问题，请点击serverlog扩展的密钥图标检查密钥是否填写正确
+
+       <br>
+       该扩展图标长这样：
+       <img
+          src="data:image/png;base64,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" />
+    </el-alert>
+ </el-tab-pane>
+ <el-tab-pane name="debug" label="开发人员调试">
+    <app-debug :store="serverStore"></app-debug>
+ </el-tab-pane>

@@ -1,0 +1,24 @@
+
+<html>
+
+<head>
+  <meta charset="utf-8"/>
+  <!-- 引入样式 -->
+<link rel="stylesheet" href="./element/index.css">
+
+  <title>调试器</title>
+</head>
+
+<body>
+  
+  <div data-vue-app="./app" id="app"></div>
+  
+</body>
+<script>
+  document.write(
+        `<script src="vue-hacker/vue-hacker.js"><\/script>`
+        // `<script src="vue-hacker/vue-hacker.js?r=${location.hostname=='localhost'?Math.random():''}"><\/script>`
+      );
+</script>
+
+</html>

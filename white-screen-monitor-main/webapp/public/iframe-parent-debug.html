@@ -1,0 +1,141 @@
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0,viewport-fit=cover">
+    <META HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+    <META HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+    <META HTTP-EQUIV="expires" CONTENT="0">
+    <style>
+        button {
+            transform: scale(0.9);
+        }
+        button:hover{
+            transform: scale(1.2);
+        }
+    </style>
+    <script>
+        window.defaultWindowKey=Object.keys(window);
+        window.synsGlobalVars=function(win){
+            setInterval(()=>{
+            // setTimeout(()=>{
+                Object.keys(win).forEach((key)=>{
+                    if(!window.defaultWindowKey.includes(key)){
+                        if('synsGlobalVars defaultWindowKey'.split(' ').includes(key)){
+                            return false;
+                        }
+                        // console.log('key---:',key)
+                        win.parent[key]=win.parent.parent[key]=win[key]
+                    }
+                })
+            },500)
+        }
+        window.synsGlobalVars(window);
+    </script>
+</head>
+
+<body>
+
+    <div style="position:realtive;">
+
+        <button id="btn" style="position:fixed;right:0;top:0;    position: fixed;
+    right: 0;
+    top: 60%;
+    width: 100px;
+    height: 50px;
+    font-size: 20px;
+    opacity: 0.5;
+    cursor: pointer;">load</button>
+
+
+
+        <button onclick="document.querySelector('iframe').contentWindow.history.back()" style="position:fixed;right:0;top:0;    position: fixed;
+    right: 0;
+    top: 40%;
+    width: 100px;
+    height: 50px;
+    font-size: 20px;
+    opacity: 0.5;
+    cursor: pointer;">back</button>
+
+
+        <button onclick="window.parent.sessionStorage.removeItem('TEMP_URL');window.parent.location.reload();" style="position:fixed;right:0;top:0;    position: fixed;
+    right: 0;
+    top: 50%;
+    width: 100px;
+    height: 50px;
+    font-size: 20px;
+    opacity: 0.5;
+    cursor: pointer;">reset</button>
+
+        <button onclick="window.parent.goHome();window.parent.location.reload();" style="position:fixed;right:0;top:0;    position: fixed;
+right: 0;
+top: 70%;
+width: 100px;
+height: 50px;
+font-size: 20px;
+opacity: 0.5;
+cursor: pointer;">go home</button>
+
+    </div>
+    <iframe style="    height: 100%;width:100%;
+        border: 0;
+        padding: 0;
+        margin: 0;" src=""></iframe>
+
+</body>
+
+</html>
+<script>
+
+    window.goHome = function (url) {
+        function go(url) {
+            window.parent.sessionStorage.setItem('TEMP_URL', IFRAME_WIN.location.origin + '/workbench' + url)
+            // window.parent.sessionStorage.setItem('TEMP_URL', IFRAME_WIN.location.origin + '/workbench' + '/#' + url)
+        }
+        go(url||'/');
+        location.reload()
+    }
+    let tempUrl = window.parent.sessionStorage.getItem('TEMP_URL') || 'http://192.168.31.52:9000/workbench/marketing#/leads-detail?id=1496051041176477697'
+
+
+    let btn = document.querySelector('#btn');
+    let hasLoad = false;
+    let count = 0;
+    document.querySelector('iframe').setAttribute('src', tempUrl)
+
+    btn.onclick = function () {
+
+        if (hasLoad) {
+            location.reload()
+            return false;
+        }
+
+        hasLoad = true;
+        btn.innerText = 'refresh';
+        var win = document.querySelector('iframe').contentWindow;
+        var doc = win.document;
+        window.IFRAME_WIN = win;
+
+
+
+        // doc.body.addEventListener('click',()=>{
+        //     count++;
+        //     if(count%3==0){
+        //         window.parent.parent.location.reload();
+        //     }
+        // })
+        var script = doc.createElement('script');
+        let jsProxyHostBase = 'http://' + window.parent.location.hostname + ':9000'
+        // let jsProxyHostBase='http://192.168.31.251:9000'+window.parent.location.port
+        script.src = jsProxyHostBase + '/home/debug-patch.js';
+        // script.src = window.location.protocol + '//dubaixing.qicp.vip/home/debug-patch.js';
+
+        doc.body.appendChild(script);
+        // btn.parentNode.removeChild(btn);
+    }
+
+
+
+</script>

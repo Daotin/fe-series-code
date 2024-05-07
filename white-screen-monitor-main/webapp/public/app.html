@@ -1,0 +1,57 @@
+<div>
+   <el-dialog width="90%" top="5%" v-if="businessConfig!=null" :visible.sync="businessConfigDialogVisible">
+      <h4 v-for="(item,k) in businessConfig">
+         {{k}}----{{item}}
+      </h4>
+   </el-dialog>
+
+   <el-tabs v-model="sidebarTabModel" type="border-card" tab-position="top">
+      <el-tab-pane name="whistle" label="whistle面板">
+
+         <br>
+         <el-button @click="win.open(win.location.protocol+'//'+win.location.hostname+':8899')">open in new tab</el-button>
+         
+         <br><br>
+         <!-- <iframe style="    border: none;
+         width: 100%;
+         overflow: hidden;
+         height: calc(100% - 150px);;
+     " :src="win.location.protocol+'//'+win.location.hostname+':8899'">
+
+         </iframe> -->
+
+      </el-tab-pane>
+      <el-tab-pane name="remote-debug" label="远程调试">
+         <remote-debugger/>
+      </el-tab-pane>
+
+      <!-- <el-tab-pane name="local-h5-debug" label="本地移动端调试">
+         <el-row>
+            <el-col :span="24">
+               <iframe onload="document.querySelector('#local-h5-debug')
+         
+         
+               .contentWindow.document.querySelector('#btn').click();
+               window.LOCAL_H5_DEBUG_URL=this.src;
+               ((this.style.opacity='1')  && false
+               && window.ELEMENT && (this.style.transform='scale(0.8)') && (this.style.marginTop='15%') && (this.style.opacity='1'));
+               " id="local-h5-debug" style="    border: none;opacity:0;
+               width: 100%;
+               overflow: hidden;
+               height: calc(100% - 100px);;
+           " src="http://192.168.31.52:9000/home/iframe-parent-debug.html#/home"></iframe>
+            </el-col>
+            <el-col :span="0">
+
+            </el-col>
+         </el-row>
+         
+      </el-tab-pane> -->
+      
+     
+   </el-tabs>
+
+
+
+
+</div>

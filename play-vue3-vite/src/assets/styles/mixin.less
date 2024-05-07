@@ -1,0 +1,102 @@
+// 混合器
+
+// 使用弹性布局居中子元素
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// 定位居中
+.abs-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.flex-center-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+.flex-center-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.clearfix::after {
+  content: "";
+  display: block;
+  visibility: hidden;
+  height: 0;
+  line-height: 0;
+  clear: both;
+}
+
+.button-hover {
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+//多行文本文字超过行数限制后显示省略号
+.text-ellipsis-multiple(@line-clamp) {
+  word-break: break-all;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -moz-box;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -webkit-line-clamp: @line-clamp;
+}
+
+// 圆形
+.round(@size) {
+  width: @size;
+  height: @size;
+  border-radius: 50%;
+}
+
+.border-bottom(@left: 10px, @right: 10px) {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: @left;
+    right: @right;
+    background-color: #eee;
+    height: 1px;
+  }
+}
+
+.border-top(@left, @right) {
+  position: relative;
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: @left;
+    right: @right;
+    background-color: #eee;
+    height: 1px;
+  }
+}
+
+.black3 {
+  color: @black3;
+}
+.black6 {
+  color: @black6;
+}
+.black9 {
+  color: @black9;
+}
