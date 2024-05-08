@@ -1,0 +1,27 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Document</title>
+        <style>
+            #box {
+                width: 200px;
+                height: 100px; 
+                display: flex;
+                background: yellow;
+            }
+            
+         </style>
+    </head>
+    <body>
+        <div id="boxId" class="box" style="color:red"></div>
+        <a href="//www.baidu.com"></a>
+    </body>
+    <script>
+        let dom = document.querySelector('#boxId');
+        let aDom = document.querySelector('a');
+
+        console.log('111111111==>', dom.style);
+        console.log('==>', aDom.href);
+        console.log('==>', aDom.getAttribute('href'));
+    </script>
+</html>
