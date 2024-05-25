@@ -9,12 +9,14 @@ module.exports = class Compiler {
         const { entry, output } = options;
         this.entry = entry;
         this.output = output;
-        this.modules = [];
+        this.modules = []; // 存放依赖列表
     }
 
     run() {
         const entryModule = this.buildModule(this.entry, true);
+        // 构建好的模块添加到modules
         this.modules.push(entryModule);
+        // 如果有依赖，则循环依赖进行构建，然后也添加到modules
         this.modules.map((_module) => {
             _module.dependencies.map((dependency) => {
                 this.modules.push(this.buildModule(dependency));
@@ -22,7 +24,12 @@ module.exports = class Compiler {
         });
         this.emitFiles();
     }
-
+    /**
+     * 构建单个模块
+     * @param {*} filename 
+     * @param {*} isEntry 
+     * @returns 
+     */
     buildModule(filename, isEntry) {
         let ast;
         if (isEntry) {
@@ -38,14 +45,18 @@ module.exports = class Compiler {
           transformCode: transform(ast)
         };
     }
-
+    /**
+     * 输出代码到dist
+     */
     emitFiles() { 
         const outputPath = path.join(this.output.path, this.output.filename);
         let modules = '';
         this.modules.map((_module) => {
             modules += `'${ _module.filename }': function (require, module, exports) { ${ _module.transformCode } },`
         });
-        
+        /**
+         * 构建类似webpack 的模块结构
+         */
         const bundle = `
             (function(modules) {
                 function require(fileName) {
@@ -61,7 +72,7 @@ module.exports = class Compiler {
                 require('${this.entry}');
             })({${modules}})
         `;
-    
+        // 写入到simplepack.config.js中指定的dist/main.js中
         fs.writeFileSync(outputPath, bundle, 'utf-8');
     }
 };
