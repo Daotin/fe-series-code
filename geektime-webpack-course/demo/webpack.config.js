@@ -2,6 +2,7 @@
 
 const path = require('path');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const ZipPlugin = require('./plugins/zip-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -12,6 +13,9 @@ module.exports = {
       filename: 'bundle.js'
   },
   plugins: [
-    new CleanWebpackPlugin()
+    new CleanWebpackPlugin(),
+    new ZipPlugin({
+      filename: 'daotin'
+    })
   ]
 };
