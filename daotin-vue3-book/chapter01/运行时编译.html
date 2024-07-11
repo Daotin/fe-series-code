@@ -1,0 +1,29 @@
+<body></body>
+
+<script>
+  const obj = {
+    tag: 'div',
+    children: [
+      {
+        tag: 'span',
+        children: 'hello vue3',
+      },
+    ],
+  };
+
+  function Render(obj, root) {
+    const dom = document.createElement(obj.tag);
+    if (obj.children) {
+      if (typeof obj.children === 'string') {
+        dom.appendChild(document.createTextNode(obj.children));
+      } else if (Array.isArray(obj.children)) {
+        obj.children.forEach((child) => {
+          Render(child, dom);
+        });
+      }
+    }
+    root.appendChild(dom);
+  }
+
+  Render(obj, document.body);
+</script>

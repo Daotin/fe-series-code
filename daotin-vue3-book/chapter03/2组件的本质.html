@@ -1,0 +1,64 @@
+<body></body>
+
+<script>
+	// 组件是函数
+	const MyComponent = () => ({
+		tag: 'div',
+		props: {
+			onClick: () => alert('my component'),
+		},
+		children: 'hello MyComponent',
+	})
+
+	// 组件是对象，需要有一个render函数
+	const MyComponentObj = {
+		render() {
+			return {
+				tag: 'div',
+				props: {
+					onClick: () => alert('my component obj'),
+				},
+				children: 'hello MyComponentObj',
+			}
+		},
+	}
+
+	function renderElement(vnode, root) {
+		const el = document.createElement(vnode.tag)
+
+		for (const key in vnode.props) {
+			if (/^on/.test(key)) {
+				const eventName = key.substring(2).toLowerCase()
+				// console.log(eventName);
+				el.addEventListener(eventName, vnode.props[key])
+			}
+		}
+
+		if (typeof vnode.children === 'string') {
+			el.appendChild(document.createTextNode(vnode.children))
+		} else if (Array.isArray(vnode.children)) {
+			vnode.children.forEach(child => renderer(child, el))
+		}
+
+		root.appendChild(el)
+	}
+
+	// 渲染组件
+	function renderComponent(vnode, root) {
+		const subVnode = typeof vnode.tag === 'object' ? vnode.tag.render() : vnode.tag()
+		renderer(subVnode, root)
+	}
+
+	function renderer(vnode, root) {
+		if (typeof vnode.tag === 'string') {
+			renderElement(vnode, root)
+		} else if (typeof vnode.tag === 'function' || typeof vnode.tag === 'object') {
+			renderComponent(vnode, root)
+		}
+	}
+
+	const vnode = {
+		tag: MyComponentObj,
+	}
+	renderer(vnode, document.body)
+</script>

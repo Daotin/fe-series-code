@@ -1,0 +1,41 @@
+<body></body>
+
+<script>
+  const vnode = {
+    tag: 'div',
+    props: {
+      onClick: () => alert('click me'),
+    },
+    children: [
+      {
+        tag: 'span',
+        children: 'hello vue3',
+      },
+    ],
+  };
+
+  function renderer(vnode, root) {
+    const el = document.createElement(vnode.tag);
+
+    for (const key in vnode.props) {
+      if (/^on/.test(key)) {
+        const eventName = key.substring(2).toLowerCase();
+        // console.log(eventName);
+        el.addEventListener(eventName, vnode.props[key]);
+      }
+    }
+
+    if (vnode.children) {
+      if (typeof vnode.children === 'string') {
+        el.appendChild(document.createTextNode(vnode.children));
+      } else if (Array.isArray(vnode.children)) {
+        vnode.children.forEach((child) => {
+          renderer(child, el);
+        });
+      }
+    }
+    root.appendChild(el);
+  }
+
+  renderer(vnode, document.body);
+</script>
