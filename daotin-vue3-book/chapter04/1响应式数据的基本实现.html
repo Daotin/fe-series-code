@@ -1,0 +1,25 @@
+<body></body>
+
+<script>
+	const data = { text: 'hello vue3' }
+
+	let obj = new Proxy(data, {
+		get(target, key) {
+			return target[key]
+		},
+		set(target, key, value) {
+			target[key] = value
+			effect()
+		},
+	})
+
+	function effect() {
+		document.body.innerText = obj.text
+	}
+
+	effect()
+
+	setTimeout(() => {
+		obj.text = 'hello'
+	}, 2000)
+</script>

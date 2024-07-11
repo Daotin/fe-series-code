@@ -1,0 +1,29 @@
+<body></body>
+
+<script>
+	const data = { text: 'hello vue3' }
+
+	const bucket = new Set()
+
+	let obj = new Proxy(data, {
+		get(target, key) {
+			bucket.add(effect)
+			return target[key]
+		},
+		set(target, key, value) {
+			target[key] = value
+			bucket.forEach(fn => fn())
+		},
+	})
+
+	function effect() {
+		console.log('do effect')
+		document.body.innerText = obj.text
+	}
+
+	effect()
+
+	setTimeout(() => {
+		obj.text = 'hello'
+	}, 2000)
+</script>

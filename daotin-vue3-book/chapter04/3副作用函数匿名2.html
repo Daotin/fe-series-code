@@ -1,0 +1,70 @@
+<body>
+	<div id="app"></div>
+	<input type="text" onInput="inputChange(event)" />
+</body>
+<!-- 修改不存在的属性 -->
+<script>
+	const app = document.getElementById('app')
+
+	const data = { text: 'hello vue3' }
+
+	const bucket = new WeakMap()
+
+	let activeEffect
+	function effect(fn) {
+		activeEffect = fn
+		fn && fn()
+	}
+
+	/**
+	 * 将data--text--effect三者建立联系
+	 */
+	let obj = new Proxy(data, {
+		get(target, key) {
+			track(target, key)
+			return target[key]
+		},
+		set(target, key, value) {
+			target[key] = value
+			trigger(target, key)
+		},
+	})
+
+	// 封装监听函数
+	function track(target, key) {
+		if (!activeEffect) return target[key]
+
+		// depsMap Map类型
+		let depsMap = bucket.get(target)
+		if (!depsMap) {
+			bucket.set(target, (depsMap = new Map()))
+		}
+
+		// deps Set类型
+		let deps = depsMap.get(key)
+		if (!deps) {
+			depsMap.set(key, (deps = new Set()))
+		}
+
+		deps.add(activeEffect)
+	}
+	// 封装触发函数
+	function trigger(target, key) {
+		const depsMap = bucket.get(target)
+		if (!depsMap) return
+		const deps = depsMap.get(key)
+		deps && deps.forEach(fn => fn())
+	}
+
+	// 副作用函数
+	effect(() => {
+		console.log('track effect')
+		app.innerText = obj.text
+	})
+
+	// 触发响应式数据改变
+	function inputChange(e) {
+		let value = e.target.value
+		obj.text = value
+	}
+</script>
