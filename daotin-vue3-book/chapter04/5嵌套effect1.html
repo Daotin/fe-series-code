@@ -1,0 +1,133 @@
+<body>
+	<div id="app"></div>
+	<div>
+		text:
+		<input type="text" onInput="inputChange(event)" />
+		<input type="text" onInput="inputChange1(event)" />
+	</div>
+</body>
+<!-- 
+
+修复问题:
+当修改foo的时候，可以正常触发effect1和effect2，
+但是多次修改foo后，再修改一次bar，虽然正常只触发effect2，但是会一次性触发多次effect2
+
+原因：effect2 在执行时被多次添加到 foo 的依赖集合中，所以会多次执行。
+
+解决：未解决。。官方代码也有这个问题。
+相关issue：
+https://github.com/HcySunYang/code-for-vue-3-book/issues/33
+https://github.com/HcySunYang/code-for-vue-3-book/issues/146
+https://github.com/HcySunYang/code-for-vue-3-book/issues/75
+
+
+-->
+<script>
+	const app = document.getElementById('app')
+
+	const data = { ok: true, text: 'hello vue3', foo: 'foo', bar: 'bar' }
+
+	const bucket = new WeakMap()
+
+	// 副作用函数栈
+	const effectStack = []
+	let activeEffect
+	function effect(fn) {
+		const effectFn = () => {
+			// 调用 cleanup 函数完成清除工作
+			cleanup(effectFn)
+			activeEffect = effectFn
+			effectStack.push(effectFn)
+			fn && fn()
+			effectStack.pop() // 当前副作用函数执行完毕，将当前副作用函数弹出
+			activeEffect = effectStack[effectStack.length - 1] // 将当前副作用函数设置为上一个副作用函数
+		}
+		effectFn.deps = [] // 存储所有包含当前副作用函数的Set集合
+		effectFn()
+	}
+
+	function cleanup(effectFn) {
+		effectFn.deps.forEach(deps => {
+			// 每一个deps都是Set结构，从中删除当前的副作用函数
+			deps.delete(effectFn)
+		})
+		effectFn.deps.length = 0
+	}
+
+	/**
+	 * 将data--text--effect三者建立联系
+	 */
+	let obj = new Proxy(data, {
+		get(target, key) {
+			track(target, key)
+			return target[key]
+		},
+		set(target, key, value) {
+			target[key] = value
+			trigger(target, key)
+			return true
+		},
+	})
+
+	// 封装监听函数
+	function track(target, key) {
+		if (!activeEffect) return target[key]
+
+		// depsMap Map类型
+		let depsMap = bucket.get(target)
+		if (!depsMap) {
+			bucket.set(target, (depsMap = new Map()))
+		}
+
+		// deps Set类型
+		let deps = depsMap.get(key)
+		if (!deps) {
+			depsMap.set(key, (deps = new Set()))
+		}
+
+		deps.add(activeEffect)
+
+		// 将Set集合加入到当前副作用函数的deps数组中
+		activeEffect.deps.push(deps)
+	}
+	// 封装触发函数
+	function trigger(target, key) {
+		// console.log('trigger')
+		const depsMap = bucket.get(target)
+		if (!depsMap) return
+		const deps = depsMap.get(key)
+		const depsToRun = new Set(deps)
+		console.log(deps)
+		depsToRun.forEach(fn => fn())
+	}
+
+	// 副作用函数
+	let temp1, temp2
+	effect(function effect1() {
+		console.log('track effect1')
+		// app.innerText = obj.ok ? obj.text : 'not'
+		effect(function effect2() {
+			console.log('track effect2')
+			temp2 = obj.bar
+		})
+
+		temp1 = obj.foo
+	})
+
+	// 触发响应式数据改变
+	function inputChange(e) {
+		let value = e.target.value
+		// obj.text = value
+		obj.foo = value
+	}
+	function inputChange1(e) {
+		let value = e.target.value
+		// obj.text = value
+		// obj.foo = value
+		obj.bar = value
+	}
+
+	// setTimeout(() => {
+	// 	obj.bar = 'bar3'
+	// }, 5000)
+</script>

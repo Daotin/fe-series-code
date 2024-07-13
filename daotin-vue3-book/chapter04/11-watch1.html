@@ -1,0 +1,139 @@
+<body>
+	<div id="app"></div>
+	<div>
+		text:
+		<input type="text" onInput="inputChange(event)" />
+	</div>
+</body>
+<!-- 
+watch的第一个参数是对象
+-->
+<script>
+	const app = document.getElementById('app')
+
+	const data = { count: 1 }
+
+	const bucket = new WeakMap()
+
+	// 副作用函数栈
+	const effectStack = []
+	let activeEffect
+	function effect(fn, options = {}) {
+		const effectFn = () => {
+			// 调用 cleanup 函数完成清除工作
+			cleanup(effectFn)
+			activeEffect = effectFn
+			effectStack.push(effectFn)
+			const res = fn()
+			effectStack.pop() // 当前副作用函数执行完毕，将当前副作用函数弹出
+			activeEffect = effectStack[effectStack.length - 1] // 将当前副作用函数设置为上一个副作用函数
+			return res
+		}
+		effectFn.options = options // 将options挂载到effectFn上
+		effectFn.deps = [] // 存储所有包含当前副作用函数的Set集合
+		if (!options.lazy) {
+			effectFn()
+		}
+		return effectFn
+	}
+
+	function cleanup(effectFn) {
+		effectFn.deps.forEach(deps => {
+			// 每一个deps都是Set结构，从中删除当前的副作用函数
+			deps.delete(effectFn)
+		})
+		effectFn.deps.length = 0
+	}
+
+	/**
+	 * 将data--text--effect三者建立联系
+	 */
+	let obj = new Proxy(data, {
+		get(target, key) {
+			track(target, key)
+			return target[key]
+		},
+		set(target, key, value) {
+			target[key] = value
+			trigger(target, key)
+			return true
+		},
+	})
+
+	// 封装监听函数
+	function track(target, key) {
+		if (!activeEffect) return target[key]
+
+		// depsMap Map类型
+		let depsMap = bucket.get(target)
+		if (!depsMap) {
+			bucket.set(target, (depsMap = new Map()))
+		}
+
+		// deps Set类型
+		let deps = depsMap.get(key)
+		if (!deps) {
+			depsMap.set(key, (deps = new Set()))
+		}
+
+		deps.add(activeEffect)
+
+		// 将Set集合加入到当前副作用函数的deps数组中
+		activeEffect.deps.push(deps)
+	}
+	// 封装触发函数
+	function trigger(target, key) {
+		// console.log('trigger')
+		const depsMap = bucket.get(target)
+		if (!depsMap) return
+		const deps = depsMap.get(key)
+		const depsToRun = new Set()
+		deps &&
+			deps.forEach(fn => {
+				if (fn !== activeEffect) {
+					depsToRun.add(fn)
+				}
+			})
+		depsToRun.forEach(fn => {
+			// 判断当前副作用函数是否有调度器，有则调用调度器并传入当前副作用函数
+			if (fn.options.schedule) {
+				fn.options.schedule(fn)
+			} else {
+				fn && fn()
+			}
+		})
+	}
+
+	function traverce(obj, seen = new Set()) {
+		if (typeof obj !== 'object' || obj === null || seen.has(obj)) return
+		seen.add(obj)
+		// 遍历对象
+		for (const key in obj) {
+			traverce(obj[key], seen)
+		}
+		return obj
+	}
+
+	function watch(source, cb) {
+		// 递归读取obj的属性值
+		effect(() => traverce(source), {
+			schedule() {
+				cb()
+			},
+		})
+	}
+
+	watch(obj, () => {
+		console.log('watch obj change')
+	})
+
+	// 触发响应式数据改变
+	function inputChange(e) {
+		let value = e.target.value
+		obj.count++
+	}
+
+	// setTimeout(() => {
+	// 	obj.bar = 'bar3'
+	// }, 5000)
+</script>
